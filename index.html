@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="refresh" content="360"> 
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+        <title>test</title>
+        <script src="https://cn.avoscloud.com/scripts/lib/av-0.3.1.min.js"></script>
+        <script src="http://a.tbcdn.cn/s/kissy/1.2.0/kissy-min.js"></script>
+    </head>
+    <body>
+        <script>
+            KISSY.ready(function(S){
+                AV.initialize("blgx18bu3llnxjmstq0q528k7ogjwgqnlv3tm9b1926af47x", "zwdgquddmljlde2crhfztjk0csrzplv0x5wlk2odpgqmoh0u");
+                S.use('ajax', function(S,IO){
+                    var token = '5j1znBVAsnSf5xQyNQyq',
+                        url = 'http://www.pm25.in/api/querys/aqis_by_station.json',
+                        station_code = '1003A'; //东四
+
+                    S.IO({
+                        type: 'get',
+                        dataType: 'jsonp',
+                        url: url,
+                        data: {
+                            token: token,
+                            station_code: station_code
+                        },
+                        success: function(data) {
+                            var SendMessage = AV.Object.extend("azure_" + 'aqi');
+                            var sendMessage = new SendMessage();
+                            var setData = function(key, value) {
+                                sendMessage.set(key, value);
+                            }
+                            if (!data.error) {
+                                var query = new AV.Query(SendMessage);
+                                // gameScore.createdAt
+                                query.select("time_point");
+                                query.descending('createdAt')
+                                query.find().then(function(results) {
+                                    var time = data[0].time_point;
+                                    if(results[0].attributes.time_point != time) {
+                                        var d = data[0],
+                                            map = {
+                                                aqi: 1,
+                                                co: 1,
+                                                no2: 1,
+                                                o3: 1,
+                                                pm2_5: 1,
+                                                pm10: 1,
+                                                primary_pollutant: 1,
+                                                quality: 1,
+                                                so2: 1,
+                                                time_point: 1
+                                            };
+
+                                        for (item in d) {
+                                            if (map[item]) {
+                                                sendMessage.set(item, d[item]);
+                                            }
+                                        }
+                                        sendMessage.save();
+                                    } else {
+                                        // return false;
+                                    }
+                                });
+                            } else {
+                                //error
+                            }
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

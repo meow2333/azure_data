@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+        <title>test</title>
+        <script src="https://cn.avoscloud.com/scripts/lib/av-0.3.1.min.js"></script>
+        <script src="http://code.jquery.com/jquery-2.1.0.js"></script>
+        <script src="highcharts.js"></script>
+    </head>
+    <body>
+        <div id="container"></div>
+        <script>
+            $(document).ready(function(){
+                AV.initialize("blgx18bu3llnxjmstq0q528k7ogjwgqnlv3tm9b1926af47x", "zwdgquddmljlde2crhfztjk0csrzplv0x5wlk2odpgqmoh0u");
+                var SendMessage = AV.Object.extend("azure_" + 'aqi');
+                var sendMessage = new SendMessage();
+                var setData = function(key, value) {
+                    sendMessage.set(key, value);
+                }
+               
+                    var query = new AV.Query(SendMessage);
+                    query.select("time_point",'aqi','co','no2','o3','pm2_5','pm10','primary_pollutant','quality','so2');
+                    query.ascending('createdAt')
+                    query.find().then(function(results) {
+                        // var time = data[0].time_point;
+                        results = results.slice(results.length-12, results.length);
+                        var time_point = [];
+                        var aqi = [];
+                        var pm2_5 = [];
+                        var pm10 = [];
+                        var co = [];
+                        var o3 = [];
+                        var no2 = [];
+                        var so2 = [];
+                        var primary_pollutant = [];
+                        var quality = [];
+                        var map = ['aqi','co','no2','o3','pm2_5','pm10','primary_pollutant','quality','so2'];
+
+                        for (var i=0,l=results.length;i<l;i++) {
+                            time_point.push(results[i].attributes.time_point);
+
+                            for (var j=0,jl=map.length;j<jl;j++) {
+
+                                if (!results[i].attributes[map[j]]) {
+
+                                    for (var q=0;q<l;q++) {
+
+                                        if (results[i+(q+1)].attributes[map[j]]) {
+                                            results[i].attributes[map[j]] = results[i+(q+1)].attributes[map[j]]
+                                            break;
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+
+                            aqi.push(results[i].attributes.aqi);
+                            co.push(results[i].attributes.co);
+                            no2.push(results[i].attributes.no2);
+                            o3.push(results[i].attributes.o3);
+                            pm2_5.push(results[i].attributes.pm2_5);
+                            pm10.push(results[i].attributes.pm10);
+                            primary_pollutant.push(results[i].attributes.primary_pollutant);
+                            quality.push(results[i].attributes.quality);
+                            so2.push(results[i].attributes.so2);
+                        }
+                        
+                        console.log(time_point)
+                        console.log(aqi)
+                        console.log(co)
+                        console.log(no2)
+                        console.log(o3)
+                        console.log(pm2_5)
+                        console.log(pm10)
+                        console.log(primary_pollutant)
+                        console.log(quality)
+                        console.log(so2)
+
+                        $(function () {
+                            $('#container').highcharts({
+                                title: {
+                                    text: '空气质量详情',
+                                    x: -20 //center
+                                },
+                                subtitle: {
+                                    text: 'Source: PM2.5in',
+                                    x: -20
+                                },
+                                xAxis: {
+                                    categories: time_point
+                                },
+                                yAxis: {
+                                    title: {
+                                        text: '数值'
+                                    },
+                                    plotLines: [{
+                                        value: 0,
+                                        width: 1,
+                                        color: '#808080'
+                                    }]
+                                },
+                                tooltip: {
+                                    valueSuffix: ''
+                                },
+                                legend: {
+                                    layout: 'vertical',
+                                    align: 'right',
+                                    verticalAlign: 'middle',
+                                    borderWidth: 0
+                                },
+                                series: [{
+                                    name: 'AQI',
+                                    data: aqi
+                                }, {
+                                    name: 'PM2.5',
+                                    data: pm2_5
+                                }, {
+                                    name: 'PM10',
+                                    data: pm10
+                                }, {
+                                    name: 'SO2',
+                                    data: so2
+                                }, {
+                                    name: 'NO2',
+                                    data: no2
+                                }, {
+                                    name: 'O3',
+                                    data: o3
+                                }]
+                            });
+                        });
+                    });
+                
+            });
+        </script>
+    </body>
+</html>
